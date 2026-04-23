@@ -22,11 +22,10 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import javax.inject.{Inject, Singleton}
 
 @Singleton()
-class MicroserviceHelloWorldController @Inject()(
-  cc: ControllerComponents
+class MicroserviceHelloWorldController @Inject() (
+    cc: ControllerComponents
 ) extends BackendController(cc):
 
   val hello: Action[AnyContent] =
     Action:
-      implicit request =>
-        Ok("Hello world")
+      implicit request => Ok("Hello world")
