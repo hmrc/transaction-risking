@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionrisking.config
+package uk.gov.hmrc.transactionrisking.services
+
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionrisking.connectors.StrRiskConnector
+import uk.gov.hmrc.transactionrisking.models.request.StrRiskRequest
+import uk.gov.hmrc.transactionrisking.models.response.StrRiskResponse
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import scala.concurrent.Future
 
 @Singleton
-class AppConfig @Inject() (config: ServicesConfig, configuration: Configuration):
+class StrRiskService @Inject()(connector: StrRiskConnector) {
 
-  val appName: String = config.getString("appName")
+  def assess(request: StrRiskRequest)(implicit hc: HeaderCarrier, correlationId: String): Future[Either[String, StrRiskResponse]] =
+    connector.getRiskInsights(request)
 
-  // cip-risk
-  private val cipRiskConfig            = configuration.get[Configuration]("microservice.services.cip-risk")
-  val cipRiskServiceBaseUrl: String    = config.baseUrl("cip-risk") + cipRiskConfig.get[String]("submit-url")
-  val cipRiskUsername: String          = cipRiskConfig.get[String]("username")
-  val cipRiskToken: String             = cipRiskConfig.get[String]("token")
+}

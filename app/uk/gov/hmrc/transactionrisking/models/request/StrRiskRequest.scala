@@ -14,20 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionrisking
+package uk.gov.hmrc.transactionrisking.models.request
 
-import play.api.inject.{Binding, Module as AppModule}
-import play.api.{Configuration, Environment}
+import play.api.libs.json.{Json, OWrites}
 
-import java.time.Clock
+case class StrRiskRequest(vatRegistrationNumber: String)
 
-class Module extends AppModule:
-
-  override def bindings(
-                         environment: Environment,
-                         configuration: Configuration
-                       ): Seq[Binding[_]] =
-    bind[Clock].toInstance(
-      Clock.systemDefaultZone
-    ) ::
-      Nil
+object StrRiskRequest:
+  implicit val writes: OWrites[StrRiskRequest] = Json.writes[StrRiskRequest]
