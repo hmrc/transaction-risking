@@ -35,7 +35,7 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.*
 
-class StrRiskConnectorISpec
+class StrRiskConnectorSpec
   extends AnyWordSpec
     with Matchers
     with MockitoSugar
@@ -58,7 +58,7 @@ class StrRiskConnectorISpec
       |}""".stripMargin
   )
 
-  private val malformedJson: JsValue = Json.parse("""{"crazyJuice": "sass"}""")
+  private val malformedJson: JsValue = Json.parse("""{"crazyJuice": "cola"}""")
   private val expectedResponse = successJson.validate[StrRiskResponse].get
 
   class Test {

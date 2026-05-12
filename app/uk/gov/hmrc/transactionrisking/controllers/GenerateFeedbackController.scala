@@ -1,0 +1,56 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.transactionrisking.controllers
+
+import play.api.libs.json.Json
+import play.api.mvc.*
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.transactionrisking.models.request.StrRiskRequest
+import uk.gov.hmrc.transactionrisking.models.response.StrRiskResponse
+import uk.gov.hmrc.transactionrisking.services.StrRiskService
+import uk.gov.hmrc.transactionrisking.utils.IdGenerator
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
+
+@Singleton
+class GenerateFeedbackController @Inject() (
+                                   cc: ControllerComponents,
+                                   strRiskService: StrRiskService,
+                                   idGenerator: IdGenerator
+                                 )(implicit ec: ExecutionContext)
+  extends BackendController(cc) {
+
+  def generateFeedback(vrn: String): Action[AnyContent] = Action.async { implicit request =>
+    implicit val correlationId: String = idGenerator.generateId()
+    implicit val headerCarrier: HeaderCarrier = hc(request)  
+
+    strRiskService
+      .assess(StrRiskRequest(vrn))
+      .map {
+        case Right(response) =>
+          Ok(Json.toJson(response))
+            .withHeaders("X-CorrelationId" -> correlationId)
+
+        case Left(error) =>
+          InternalServerError(Json.obj("message" -> error))
+            .withHeaders("X-CorrelationId" -> correlationId)
+      }
+  }
+
+}

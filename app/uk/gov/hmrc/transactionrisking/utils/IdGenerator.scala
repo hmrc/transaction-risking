@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionrisking.config
+package uk.gov.hmrc.transactionrisking.utils
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject() (config: ServicesConfig, configuration: Configuration):
+class IdGenerator @Inject() {
 
-  val appName: String = config.getString("appName")
+  def generateId(): String = UUID.randomUUID().toString
 
-  private val cipRiskConfig            = configuration.get[Configuration]("microservice.services.cip-risk")
-  val cipRiskServiceBaseUrl: String    = config.baseUrl("cip-risk") + cipRiskConfig.get[String]("submit-url")
-  val cipRiskUsername: String          = cipRiskConfig.get[String]("username")
-  val cipRiskToken: String             = cipRiskConfig.get[String]("token")
+}

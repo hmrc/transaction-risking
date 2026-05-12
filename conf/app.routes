@@ -1,2 +1,3 @@
 # microservice specific routes
 
+POST       /feedback/:vrn       uk.gov.hmrc.transactionrisking.controllers.GenerateFeedbackController.generateFeedback(vrn: String)
