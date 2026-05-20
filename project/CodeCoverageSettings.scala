@@ -5,17 +5,20 @@ object CodeCoverageSettings {
 
   private val excludedPackages: Seq[String] = Seq(
     "<empty>",
-    "Reverse.*",
-    "uk.gov.hmrc.BuildInfo",
-    "app.*",
-    "prod.*",
-    ".*Routes.*",
-    "testOnly.*",
-    "testOnlyDoNotUseInAppConf.*"
+    "app",
+    "prod",
+    "testOnlyDoNotUseInAppConf",
+    ".*Reverse.*",
+    ".*javascript.*"
   )
 
-  val settings: Seq[Setting[_]] = Seq(
+  private val excludedFiles: Seq[String] = Seq(
+    ".*target.scala-3\\.3\\.6.routes.*"
+  )
+
+  val settings: Seq[Setting[?]] = Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
+    ScoverageKeys.coverageExcludedFiles := excludedFiles.mkString(";"),
     ScoverageKeys.coverageMinimumStmtTotal := 80,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true
