@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.transactionrisking.services
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
 import org.scalatest.matchers.should.Matchers
@@ -26,14 +27,15 @@ import uk.gov.hmrc.transactionrisking.connectors.StrRiskConnector
 import uk.gov.hmrc.transactionrisking.models.request.StrRiskRequest
 import uk.gov.hmrc.transactionrisking.models.response.StrRiskResponse
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.*
+import scala.concurrent.{Await, Future}
 
-class StrRiskServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
+class StrRiskServiceSpec extends AnyWordSpec with Matchers with MockitoSugar:
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val correlationId: String = "test-correlation-id"
-
+  
   private val validVatNumber = "GB123456789"
   private val invalidVatNumber = "INVALID"
 
@@ -43,56 +45,49 @@ class StrRiskServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
   private val strRiskResponse = StrRiskResponse(
     riskScore = 12.46,
     riskCorrelationId = "123e4567-e89b-12d3-a456-426614174000",
-    reasons = Seq("VRN 0128925978251 is 3 hops from something risky."),
+    reasons = Seq("VRN 0128925978251 is 3 hops from something risky.")
   )
-
+  
   private def await[T](f: Future[T]): T = Await.result(f, 5.seconds)
 
-  class Test {
+  private def rightT(response: StrRiskResponse): EitherT[Future, String, StrRiskResponse] = EitherT.rightT(response)
+
+  private def leftT(error: String): EitherT[Future, String, StrRiskResponse] = EitherT.leftT(error)
+
+  class Test:
     val mockConnector: StrRiskConnector = mock[StrRiskConnector]
     val service = new StrRiskService(mockConnector)
-  }
 
-  "Given StrRiskService is available" when {
+  "StrRiskService" when :
 
-    "assess is called with a valid VAT number" must {
-      "return the risk response" in new Test {
+    "assess is called with a valid VAT number" must :
+      "return the risk response" in new Test:
         when(mockConnector.getRiskInsights(eqTo(strRiskRequest))(any(), any()))
-          .thenReturn(Future.successful(Right(strRiskResponse)))
+          .thenReturn(rightT(strRiskResponse))
 
-        val result: Either[String, StrRiskResponse] = await(service.assess(strRiskRequest))
+        val result: Either[String, StrRiskResponse] = await(service.assess(strRiskRequest).value)
         result shouldBe Right(strRiskResponse)
-      }
-    }
 
-    "assess is called and the connector returns a JSON validation error" must {
-      "return a Left with the error message" in new Test {
+    "assess is called and the connector returns a JSON validation error" must :
+      "return a Left with the error message" in new Test:
         when(mockConnector.getRiskInsights(eqTo(strRiskRequest))(any(), any()))
-          .thenReturn(Future.successful(Left("JSON validation failed")))
+          .thenReturn(leftT("JSON validation failed"))
 
-        val result: Either[String, StrRiskResponse] = await(service.assess(strRiskRequest))
+        val result: Either[String, StrRiskResponse] = await(service.assess(strRiskRequest).value)
         result shouldBe Left("JSON validation failed")
-      }
-    }
 
-    "assess is called and the connector returns an unexpected status" must {
-      "return a Left with the error message" in new Test {
+    "assess is called and the connector returns an unexpected status" must :
+      "return a Left with the error message" in new Test:
         when(mockConnector.getRiskInsights(eqTo(invalidStrRiskRequest))(any(), any()))
-          .thenReturn(Future.successful(Left("Unexpected status 400 from cip-risk")))
+          .thenReturn(leftT("Unexpected status 400 from cip-risk"))
 
-        val result: Either[String, StrRiskResponse] = await(service.assess(invalidStrRiskRequest))
+        val result: Either[String, StrRiskResponse] = await(service.assess(invalidStrRiskRequest).value)
         result shouldBe Left("Unexpected status 400 from cip-risk")
-      }
-    }
 
-    "assess is called and the connector throws an exception" must {
-      "return a Left with the exception message" in new Test {
+    "assess is called and the connector throws an exception" must :
+      "return a Left with the exception message" in new Test:
         when(mockConnector.getRiskInsights(eqTo(strRiskRequest))(any(), any()))
-          .thenReturn(Future.successful(Left("Exception calling cip-risk: connection refused")))
+          .thenReturn(leftT("Exception calling cip-risk: connection refused"))
 
-        val result: Either[String, StrRiskResponse] = await(service.assess(strRiskRequest))
+        val result: Either[String, StrRiskResponse] = await(service.assess(strRiskRequest).value)
         result shouldBe Left("Exception calling cip-risk: connection refused")
-      }
-    }
-  }
-}

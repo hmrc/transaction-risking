@@ -29,28 +29,33 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class GenerateFeedbackController @Inject() (
-                                   cc: ControllerComponents,
-                                   strRiskService: StrRiskService,
-                                   idGenerator: IdGenerator
-                                 )(implicit ec: ExecutionContext)
+class GenerateFeedbackController @Inject()(
+                                            cc: ControllerComponents,
+                                            strRiskService: StrRiskService,
+                                            idGenerator: IdGenerator
+                                          )(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
   def generateFeedback(vrn: String): Action[AnyContent] = Action.async { implicit request =>
     implicit val correlationId: String = idGenerator.generateId()
-    implicit val headerCarrier: HeaderCarrier = hc(request)  
+    implicit val hc: HeaderCarrier = HeaderCarrier()
 
-    strRiskService
-      .assess(StrRiskRequest(vrn))
-      .map {
-        case Right(response) =>
-          Ok(Json.toJson(response))
-            .withHeaders("X-CorrelationId" -> correlationId)
+    val pipeline = for
+      riskResponse <- strRiskService.assess(StrRiskRequest(vrn))
+      
+    // nextResponse <- nextService.call(riskResponse.riskScore)
 
-        case Left(error) =>
-          InternalServerError(Json.obj("message" -> error))
-            .withHeaders("X-CorrelationId" -> correlationId)
-      }
+    yield riskResponse
+
+    pipeline.value.map {
+      case Right(response: StrRiskResponse) =>
+        Ok(Json.toJson(response))
+          .withHeaders("X-CorrelationId" -> correlationId)
+
+      case Left(error: String) =>
+        InternalServerError(Json.obj("message" -> error))
+          .withHeaders("X-CorrelationId" -> correlationId)
+    }
   }
 
 }

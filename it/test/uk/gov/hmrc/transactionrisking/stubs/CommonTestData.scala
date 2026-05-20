@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionrisking.services
+package uk.gov.hmrc.transactionrisking.stubs
 
-import cats.data.EitherT
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionrisking.connectors.StrRiskConnector
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.transactionrisking.models.request.StrRiskRequest
 import uk.gov.hmrc.transactionrisking.models.response.StrRiskResponse
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+object CommonTestData:
 
-@Singleton
-class StrRiskService @Inject()(connector: StrRiskConnector):
+  val simpleVrn: String           = "123456789"
+  val invalidVrn: String          = "INVALID"
+  val simpleCorrelationId: String = "test-correlation-id"
 
-  def assess(
-              request: StrRiskRequest
-            )(implicit hc: HeaderCarrier, correlationId: String): EitherT[Future, String, StrRiskResponse] =
-    connector.getRiskInsights(request)
+  val simpleStrRiskRequest: StrRiskRequest = StrRiskRequest(vatRegistrationNumber = simpleVrn)
+
+  val simpleStrRiskResponse: StrRiskResponse = StrRiskResponse(
+    riskScore         = 12.33,
+    riskCorrelationId = simpleCorrelationId,
+    reasons           = Seq(s"$simpleCorrelationId is 3 hops away from risky")
+  )
+
+  val simpleStrRiskResponseJson: JsValue = Json.toJson(simpleStrRiskResponse)

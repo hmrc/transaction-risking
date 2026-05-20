@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.transactionrisking.connectors
 
+import cats.data.EitherT
 import play.api.Logging
-import play.api.http.Status.OK
 import play.api.libs.json.Json
 import play.api.libs.ws.writeableOf_JsValue
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionrisking.config.AppConfig
 import uk.gov.hmrc.transactionrisking.models.request.StrRiskRequest
 import uk.gov.hmrc.transactionrisking.models.response.StrRiskResponse
@@ -34,48 +34,38 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class StrRiskConnector @Inject()(
                                   val httpClient: HttpClientV2,
-                                  appConfig: AppConfig
-                                )(implicit val ec: ExecutionContext) extends Logging {
+                                  appConfig:      AppConfig
+                                )(implicit val ec: ExecutionContext) extends Logging:
 
-  private[connectors] def authHeaders(): Seq[(String, String)] = {
+  private[connectors] def authHeaders(): Seq[(String, String)] =
     val encoded = Base64.getEncoder.encodeToString(
       s"${appConfig.cipRiskUsername}:${appConfig.cipRiskToken}".getBytes
     )
     Seq("Authorization" -> s"Basic $encoded")
-  }
 
   def getRiskInsights(
                        request: StrRiskRequest
-                     )(implicit hc: HeaderCarrier, correlationId: String): Future[Either[String, StrRiskResponse]] = {
+                     )(implicit hc: HeaderCarrier, correlationId: String): EitherT[Future, String, StrRiskResponse] =
 
     logger.info(s"$correlationId::[StrRiskConnector:getRiskInsights] calling STR risk API")
 
-    httpClient
-      .post(url"${appConfig.cipRiskServiceBaseUrl}")
-      .withBody(Json.toJson(request))
-      .setHeader(authHeaders() *)
-      .execute[HttpResponse]
-      .map { response =>
-        logger.info(s"$correlationId::[StrRiskConnector:getRiskInsights] response status ${response.status}")
-        response.status match {
-          case OK =>
-            response.json
-              .validate[StrRiskResponse]
-              .fold(
-                e => {
-                  logger.error(s"$correlationId::[StrRiskConnector:getRiskInsights] JSON validation failed: $e")
-                  Left(s"JSON validation failed: $e")
-                },
-                report => Right(report)
-              )
-          case status =>
-            logger.error(s"$correlationId::[StrRiskConnector:getRiskInsights] unexpected status $status body: ${response.body}")
-            Left(s"Unexpected status $status from cip-risk")
+    EitherT(
+      httpClient
+        .post(url"${appConfig.cipRiskServiceBaseUrl}")
+        .withBody(Json.toJson(request))
+        .setHeader(authHeaders()*)
+        .execute[Either[UpstreamErrorResponse, StrRiskResponse]]
+        .map {
+          case Right(response) =>
+            logger.info(s"$correlationId::[StrRiskConnector:getRiskInsights] success")
+            Right(response)
+
+          case Left(errorResponse) =>
+            logger.error(s"$correlationId::[StrRiskConnector:getRiskInsights] failed status ${errorResponse.statusCode}: ${errorResponse.message}")
+            Left(s"Unexpected status ${errorResponse.statusCode} from cip-risk")
         }
-      }
-      .recover { case ex =>
-        logger.error(s"$correlationId::[StrRiskConnector:getRiskInsights] unexpected exception", ex)
-        Left(s"Exception calling cip-risk: ${ex.getMessage}")
-      }
-  }
-}
+        .recover { case ex =>
+          logger.error(s"$correlationId::[StrRiskConnector:getRiskInsights] unexpected exception", ex)
+          Left(s"Exception calling cip-risk: ${ex.getMessage}")
+        }
+    )
