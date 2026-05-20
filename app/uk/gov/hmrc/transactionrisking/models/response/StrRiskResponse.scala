@@ -25,5 +25,5 @@ case class StrRiskResponse(
                           )
 
 object StrRiskResponse:
-  implicit val reads: OFormat[StrRiskResponse] = Json.format[StrRiskResponse]
+  implicit val format: OFormat[StrRiskResponse] = Json.format[StrRiskResponse]
 
