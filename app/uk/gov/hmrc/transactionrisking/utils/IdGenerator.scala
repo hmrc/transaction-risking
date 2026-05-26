@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionrisking
+package uk.gov.hmrc.transactionrisking.utils
 
-import play.api.inject.{Binding, Module as AppModule}
-import play.api.{Configuration, Environment}
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
-import java.time.Clock
+@Singleton
+class IdGenerator @Inject() {
 
-class Module extends AppModule:
+  def generateId(): String = UUID.randomUUID().toString
 
-  override def bindings(
-                         environment: Environment,
-                         configuration: Configuration
-                       ): Seq[Binding[_]] =
-    bind[Clock].toInstance(
-      Clock.systemDefaultZone
-    ) ::
-      Nil
+}

@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionrisking.controllers
+package uk.gov.hmrc.transactionrisking.models.response
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import play.api.libs.json.{Json, OFormat}
 
-import javax.inject.{Inject, Singleton}
+case class StrRiskResponse(
+                          riskScore: Double,
+                          riskCorrelationId: String,
+                          reasons: Seq[String]
+                          )
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject() (
-    cc: ControllerComponents
-) extends BackendController(cc):
+object StrRiskResponse:
+  implicit val format: OFormat[StrRiskResponse] = Json.format[StrRiskResponse]
 
-  val hello: Action[AnyContent] =
-    Action:
-      implicit request => Ok("Hello world")
