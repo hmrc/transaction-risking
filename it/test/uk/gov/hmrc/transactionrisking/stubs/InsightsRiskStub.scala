@@ -21,13 +21,13 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status.*
 import play.api.libs.json.Json
 
-object StrRiskStub:
+object InsightsRiskStub:
 
-  private val cipRiskUrl = "/str/risk/insights"
+  private val InsightsRiskUrl = "/vat-insights-proxy"
 
   def successResponse(vrn: String): StubMapping =
     stubFor(
-      post(urlEqualTo(cipRiskUrl))
+      post(urlEqualTo(InsightsRiskUrl))
         .withRequestBody(equalToJson(
           Json.obj("vatRegistrationNumber" -> vrn).toString(),
           true,
@@ -37,13 +37,13 @@ object StrRiskStub:
           aResponse()
             .withStatus(OK)
             .withHeader("Content-Type", "application/json")
-            .withBody(CommonTestData.simpleStrRiskResponseJson.toString())
+            .withBody(CommonTestData.simpleInsightsRiskResponseJson.toString())
         )
     )
 
   def serverErrorResponse(): StubMapping =
     stubFor(
-      post(urlEqualTo(cipRiskUrl))
+      post(urlEqualTo(InsightsRiskUrl))
         .willReturn(
           aResponse()
             .withStatus(INTERNAL_SERVER_ERROR)
@@ -54,7 +54,7 @@ object StrRiskStub:
 
   def serviceUnavailableResponse(): StubMapping =
     stubFor(
-      post(urlEqualTo(cipRiskUrl))
+      post(urlEqualTo(InsightsRiskUrl))
         .willReturn(
           aResponse()
             .withStatus(SERVICE_UNAVAILABLE)
@@ -65,7 +65,7 @@ object StrRiskStub:
 
   def malformedJsonResponse(): StubMapping =
     stubFor(
-      post(urlEqualTo(cipRiskUrl))
+      post(urlEqualTo(InsightsRiskUrl))
         .willReturn(
           aResponse()
             .withStatus(OK)

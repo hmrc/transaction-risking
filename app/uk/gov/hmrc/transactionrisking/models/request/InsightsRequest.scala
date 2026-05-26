@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionrisking.models.response
+package uk.gov.hmrc.transactionrisking.models.request
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, OWrites}
 
-case class StrRiskResponse(
-                          riskScore: Double,
-                          riskCorrelationId: String,
-                          reasons: Seq[String]
-                          )
+case class InsightsRequest(vatRegistrationNumber: String)
 
-object StrRiskResponse:
-  implicit val format: OFormat[StrRiskResponse] = Json.format[StrRiskResponse]
-
+object InsightsRequest:
+  given writes: OWrites[InsightsRequest] = Json.writes[InsightsRequest]

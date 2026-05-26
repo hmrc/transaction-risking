@@ -27,5 +27,3 @@ class AppConfig @Inject() (config: ServicesConfig, configuration: Configuration)
 
   private val cipRiskConfig            = configuration.get[Configuration]("microservice.services.cip-risk")
   val cipRiskServiceBaseUrl: String    = config.baseUrl("cip-risk") + cipRiskConfig.get[String]("submit-url")
-  val cipRiskUsername: String          = cipRiskConfig.get[String]("username")
-  val cipRiskToken: String             = cipRiskConfig.get[String]("token")
