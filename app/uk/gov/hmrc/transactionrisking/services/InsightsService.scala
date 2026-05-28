@@ -18,17 +18,17 @@ package uk.gov.hmrc.transactionrisking.services
 
 import cats.data.EitherT
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionrisking.connectors.StrRiskConnector
-import uk.gov.hmrc.transactionrisking.models.request.StrRiskRequest
-import uk.gov.hmrc.transactionrisking.models.response.StrRiskResponse
+import uk.gov.hmrc.transactionrisking.connectors.InsightsConnector
+import uk.gov.hmrc.transactionrisking.models.request.InsightsRequest
+import uk.gov.hmrc.transactionrisking.models.response.InsightsResponse
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class StrRiskService @Inject()(connector: StrRiskConnector):
+class InsightsService @Inject()(connector: InsightsConnector):
 
   def assess(
-              request: StrRiskRequest
-            )(implicit hc: HeaderCarrier, correlationId: String): EitherT[Future, String, StrRiskResponse] =
+              request: InsightsRequest
+            )(implicit hc: HeaderCarrier, correlationId: String): EitherT[Future, String, InsightsResponse] =
     connector.getRiskInsights(request)

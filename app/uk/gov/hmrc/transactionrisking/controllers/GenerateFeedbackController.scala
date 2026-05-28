@@ -20,9 +20,9 @@ import play.api.libs.json.Json
 import play.api.mvc.*
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.transactionrisking.models.request.StrRiskRequest
-import uk.gov.hmrc.transactionrisking.models.response.StrRiskResponse
-import uk.gov.hmrc.transactionrisking.services.StrRiskService
+import uk.gov.hmrc.transactionrisking.models.request.InsightsRequest
+import uk.gov.hmrc.transactionrisking.models.response.InsightsResponse
+import uk.gov.hmrc.transactionrisking.services.InsightsService
 import uk.gov.hmrc.transactionrisking.utils.IdGenerator
 
 import javax.inject.{Inject, Singleton}
@@ -31,7 +31,7 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class GenerateFeedbackController @Inject()(
                                             cc: ControllerComponents,
-                                            strRiskService: StrRiskService,
+                                            insightsService: InsightsService,
                                             idGenerator: IdGenerator
                                           )(implicit ec: ExecutionContext)
   extends BackendController(cc) {
@@ -41,14 +41,14 @@ class GenerateFeedbackController @Inject()(
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     val pipeline = for
-      riskResponse <- strRiskService.assess(StrRiskRequest(vrn))
+      riskResponse <- insightsService.assess(InsightsRequest(vrn))
       
     // nextResponse <- nextService.call(riskResponse.riskScore)
 
     yield riskResponse
 
     pipeline.value.map {
-      case Right(response: StrRiskResponse) =>
+      case Right(response: InsightsResponse) =>
         Ok(Json.toJson(response))
           .withHeaders("X-CorrelationId" -> correlationId)
 
