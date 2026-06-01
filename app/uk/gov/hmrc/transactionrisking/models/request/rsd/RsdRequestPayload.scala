@@ -1,4 +1,4 @@
-package uk.gov.hmrc.transactionrisking.models.request.Rsd
+package uk.gov.hmrc.transactionrisking.models.request.rsd
 
 import play.api.libs.json.{Format, Json}
 
