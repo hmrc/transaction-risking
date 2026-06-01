@@ -27,3 +27,11 @@ class AppConfig @Inject() (config: ServicesConfig, configuration: Configuration)
 
   private val cipRiskConfig            = configuration.get[Configuration]("microservice.services.cip-risk")
   val cipRiskServiceBaseUrl: String    = config.baseUrl("cip-risk") + cipRiskConfig.get[String]("submit-url")
+
+  // RSD (TEMP:I haven't got the service details)
+  private val rsdConfig = configuration.get[Configuration]("microservice.services.rsd")
+  val rsdBaseUrl: String = config.baseUrl("rsd") + rsdConfig.get[String]("submit-url")
+  val rsdToken: String = config.getString("microservice.services.rsd.token")
+  val rsdEnv: String = config.getString("microservice.services.rsd.env")
+  val rsdEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.rsd.environmentHeaders")
+
