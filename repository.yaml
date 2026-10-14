@@ -4,4 +4,4 @@ service-type: backend
 description: A service designed to identify and flag potential risks or inaccuracies in VAT Returns before submission.
 tags: []
 deprecated: true
-end-of-life-date: 2026-10-14
+end-of-life-date: 2026-10-15
