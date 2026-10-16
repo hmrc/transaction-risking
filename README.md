@@ -1,5 +1,10 @@
 # transaction-risking
 
+> **This repository has been deprecated and is no longer actively maintained.**
+>
+> Please use the new version of the service: [hmrc/mtd-transaction-risking](https://github.com/hmrc/mtd-transaction-risking).
+
+
 The VAT Transactional Risking (TxR), publicly known as VAT Assist. It is a microservice designed to identify and flag potential risks or inaccuracies in VAT Returns before submission by showing users helpful messages.
 
 The service acts as a pre-submission check within the normal VAT submission process. Since users submit VAT returns via accounting software (e.g. Sage, QuickBooks, Xero), software vendors are required to integrate VAT Assist into their products in order for users to see the relevant messages.
